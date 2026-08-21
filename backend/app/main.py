@@ -1,5 +1,7 @@
+import logging
 import sys
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Ensure backend root directory is in sys.path for cloud host deployments
 BACKEND_ROOT = Path(__file__).resolve().parent.parent
