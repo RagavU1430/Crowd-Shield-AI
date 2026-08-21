@@ -1,0 +1,83 @@
+{
+  "venue_id": "VENUE_STADIUM_ARENA_01",
+  "venue_name": "Metro Grand Arena - Sector East Concourse",
+  "total_max_capacity": 4500,
+  "zones": [
+    {
+      "zone_id": "ZONE_A",
+      "name": "North Entry Plaza",
+      "polygon": [[50, 50], [300, 50], [300, 240], [50, 240]],
+      "area_sqm": 350.0,
+      "max_capacity": 1200,
+      "warning_density_sqm": 3.0,
+      "critical_density_sqm": 5.0
+    },
+    {
+      "zone_id": "ZONE_B",
+      "name": "Main Stage Front Concourse",
+      "polygon": [[310, 50], [600, 50], [600, 240], [310, 240]],
+      "area_sqm": 200.0,
+      "max_capacity": 1000,
+      "warning_density_sqm": 3.5,
+      "critical_density_sqm": 5.5,
+      "is_critical_bottleneck_candidate": true
+    },
+    {
+      "zone_id": "ZONE_C",
+      "name": "South Exhibition Hall",
+      "polygon": [[50, 250], [300, 250], [300, 450], [50, 450]],
+      "area_sqm": 400.0,
+      "max_capacity": 1500,
+      "warning_density_sqm": 3.0,
+      "critical_density_sqm": 5.0
+    },
+    {
+      "zone_id": "ZONE_D",
+      "name": "East Bypass Corridor",
+      "polygon": [[310, 250], [600, 250], [600, 450], [310, 450]],
+      "area_sqm": 300.0,
+      "max_capacity": 800,
+      "warning_density_sqm": 2.5,
+      "critical_density_sqm": 4.5
+    }
+  ],
+  "gates_and_passages": [
+    {
+      "edge_id": "GATE_A_TO_ZONE_A",
+      "source": "EXTERNAL_ENTRY_NORTH",
+      "target": "ZONE_A",
+      "type": "ENTRY_GATE",
+      "is_controllable": true,
+      "max_throughput_pax_sec": 8.0,
+      "current_status": "OPEN"
+    },
+    {
+      "edge_id": "CORRIDOR_A_TO_B",
+      "source": "ZONE_A",
+      "target": "ZONE_B",
+      "type": "INTERNAL_CORRIDOR",
+      "is_controllable": true,
+      "max_throughput_pax_sec": 5.0,
+      "current_status": "OPEN",
+      "is_bottleneck": true
+    },
+    {
+      "edge_id": "EXIT_C_FROM_ZONE_B",
+      "source": "ZONE_B",
+      "target": "EXTERNAL_SAFETY_PERIMETER",
+      "type": "EMERGENCY_EXIT",
+      "is_controllable": true,
+      "max_throughput_pax_sec": 10.0,
+      "current_status": "CLOSED"
+    },
+    {
+      "edge_id": "BYPASS_CORRIDOR_A_TO_D",
+      "source": "ZONE_A",
+      "target": "ZONE_D",
+      "type": "DIVERSION_CORRIDOR",
+      "is_controllable": true,
+      "max_throughput_pax_sec": 6.5,
+      "current_status": "STANDBY"
+    }
+  ]
+}

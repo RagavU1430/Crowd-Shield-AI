@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CROWD-SHIELD — Tactical Command Center</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand-wrap">
+      <span class="brand-badge">DECISION SUPPORT</span>
+      <span class="brand-name">CROWD-SHIELD</span>
+      <span style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); margin-left: 8px;">
+        Sense → Predict → Simulate → Recommend → Protect
+      </span>
+    </div>
+
+    <div class="header-badges">
+      <div class="tag-badge tag-privacy">
+        <span>🛡️ ANONYMOUS ANALYTICS (NO FACIAL REID)</span>
+      </div>
+      <div class="tag-badge tag-cctv-future">
+        <span>📡 LIVE CCTV: FUTURE INTEGRATION</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="app-container">
+
+    <!-- UPLOAD & INGESTION PANEL -->
+    <div class="glass-panel" id="upload-panel">
+      <div class="panel-title">
+        <span>PRIMARY INPUT: UPLOAD CROWD VIDEO</span>
+        <span style="font-size: 11px; font-weight: 600; color: var(--accent-cyan); font-family: var(--font-mono);">
+          SUPPORTED: MP4 / WEBM / MOV
+        </span>
+      </div>
+
+      <div class="upload-hero" id="drop-zone">
+        <div style="font-size: 38px; margin-bottom: 10px;">📹</div>
+        <h3 style="font-family: var(--font-heading); font-size: 18px; margin-bottom: 6px;">
+          Drag & Drop Crowd / Event Video Here
+        </h3>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 16px;">
+          Upload recorded festival footage, stadium concourse video, or simulated crowd clips
+        </p>
+        <button class="btn-primary" onclick="document.getElementById('video-file-input').click()">
+          📂 SELECT VIDEO FILE
+        </button>
+        <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/quicktime" style="display: none;">
+        
+        <div style="margin-top: 14px; font-size: 12px; color: var(--text-dim);">— OR —</div>
+        <button class="btn-secondary" style="margin-top: 8px;" onclick="runBenchmarkScenario()">
+          ⚡ RUN BENCHMARK SIMULATED SCENARIO (INSTANT DEMO)
+        </button>
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="mode-selector">
+        <div class="mode-pill active" id="mode-standard" onclick="setAnalysisMode('STANDARD')">
+          1. Standard Crowd Analysis
+        </div>
+        <div class="mode-pill" id="mode-retrospective_incident" onclick="setAnalysisMode('RETROSPECTIVE_INCIDENT')">
+          2. Retrospective Incident Analysis
+        </div>
+        <div class="mode-pill" id="mode-simulated_scenario" onclick="setAnalysisMode('SIMULATED_SCENARIO')">
+          3. Simulated Scenario
+        </div>
+      </div>
+
+      <!-- Mode Disclaimer Banner -->
+      <div class="disclaimer-banner" style="margin-top: 16px;">
+        <span id="mode-disclaimer-text">
+          <strong>STANDARD ANALYSIS:</strong> Uploaded video is processed for anonymous density, flow convergence, and contextual decision-support estimates.
+        </span>
+      </div>
+
+      <!-- Progress Tracking Box -->
+      <div class="progress-container" id="progress-box">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; font-family: var(--font-mono);">
+          <span id="progress-text">Analyzing video...</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD (Shown after video analysis) -->
+    <div class="dashboard-grid" id="dashboard-content" style="display: none;">
+
+      <!-- LEFT COLUMN: VIDEO PLAYER WITH OVERLAYS -->
+      <div class="glass-panel" style="display: flex; flex-direction: column;">
+        <div class="panel-title">
+          <span>ANONYMOUS PERCEPTION & KINEMATIC OVERLAY</span>
+          <span style="font-size: 11px; font-family: var(--font-mono); color: var(--accent-cyan);">
+            YOLOv8 + OPTICAL FLOW
+          </span>
+        </div>
+
+        <div class="video-player-box">
+          <video id="main-video" controls muted loop></video>
+          <canvas id="overlay-canvas" class="video-canvas-overlay"></canvas>
+        </div>
+
+        <div class="overlay-toggles">
+          <button class="toggle-btn active" id="toggle-detections" onclick="toggleOverlay('detections')">
+            ✔ Detections (Centroids)
+          </button>
+          <button class="toggle-btn active" id="toggle-heatmap" onclick="toggleOverlay('heatmap')">
+            ✔ Density Heatmap
+          </button>
+          <button class="toggle-btn active" id="toggle-flow" onclick="toggleOverlay('flow')">
+            ✔ Flow Vectors
+          </button>
+          <button class="toggle-btn active" id="toggle-zones" onclick="toggleOverlay('zones')">
+            ✔ Venue Zones
+          </button>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: TELEMETRY & DECISION SUPPORT -->
+      <div class="glass-panel" style="display: flex; flex-direction: column;">
+        <div class="panel-title">
+          <span>CONTEXTUAL RISK TELEMETRY</span>
+          <span class="risk-tier-tag tier-critical" id="val-risk-tier">CRITICAL</span>
+        </div>
+
+        <!-- Big Risk Gauge -->
+        <div class="risk-gauge-container">
+          <div>
+            <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-dim);">CONTEXTUAL RISK SCORE</div>
+            <div class="risk-num" id="val-risk-score" style="color: var(--accent-red);">86</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Scale: 0 (Safe) to 100 (Critical)</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-dim);">RISK TRAJECTORY</div>
+            <div style="font-family: var(--font-heading); font-size: 16px; font-weight: 800; color: var(--accent-red);" id="val-trend">
+              ↑ RAPIDLY INCREASING
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              Critical Zone: <strong style="color: var(--accent-red);" id="val-critical-zone">ZONE_B</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Grid -->
+        <div class="telemetry-row">
+          <div class="metric-card">
+            <span class="metric-label">PEOPLE DETECTED</span>
+            <span class="metric-val" id="val-people-count">154</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">MEASURED DENSITY</span>
+            <span class="metric-val" id="val-density">6.4 pax/m²</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">MEAN FLOW SPEED</span>
+            <span class="metric-val" id="val-speed">0.35 m/s</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">TURBULENCE INDEX</span>
+            <span class="metric-val" id="val-turbulence">0.89</span>
+          </div>
+        </div>
+
+        <!-- Primary Risk Factors -->
+        <div style="background: rgba(10, 17, 40, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--accent-cyan); font-weight: 700; margin-bottom: 6px;">
+            PRIMARY RISK CONTRIBUTORS:
+          </div>
+          <ul id="primary-factors-list" style="list-style: none; font-size: 11.5px; color: var(--text-main); display: flex; flex-direction: column; gap: 4px;">
+            <li>• High Crowd Density (>4.5 pax/m²)</li>
+            <li>• Flow Convergence & Opposing Shockwave</li>
+            <li>• Bottleneck Chokepoint Ingress Pressure</li>
+          </ul>
+        </div>
+
+        <!-- INTERVENTION SIMULATOR & HITL -->
+        <div class="panel-title" style="margin-top: 8px;">
+          <span>COUNTERFACTUAL INTERVENTION SIMULATOR</span>
+          <span style="font-size: 11px; font-family: var(--font-mono); color: var(--accent-green);">WHAT-IF GRAPH FLOW</span>
+        </div>
+
+        <div id="interventions-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Human In The Loop Box -->
+        <div class="hitl-banner" id="hitl-action-box">
+          <div>
+            <div style="font-size: 11px; font-family: var(--font-mono); color: var(--accent-green); font-weight: 700;">
+              AI TOP RECOMMENDATION (FEASIBILITY VERIFIED)
+            </div>
+            <div style="font-family: var(--font-heading); font-size: 14px; font-weight: 800; margin-top: 2px;" id="rec-title">
+              Open Emergency Exit C + Redirect Incoming Flow
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;" id="rec-delta">
+              Simulated Risk: 86 → 29 (-57 pts reduction)
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-approve" onclick="approveIntervention()">✔ APPROVE ACTION</button>
+            <button class="btn-reject" onclick="rejectIntervention()">REJECT</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM ROW: INTERACTIVE SCRUBBABLE TIMELINE -->
+      <div class="glass-panel timeline-panel">
+        <div class="panel-title">
+          <span>VIDEO TIMELINE & SPATIO-TEMPORAL RISK TRAJECTORY</span>
+          <span style="font-size: 11px; color: var(--text-muted);">
+            Click any timestamp to inspect instantaneous frame kinetics & risk contributors
+          </span>
+        </div>
+        <div class="timeline-track-wrap" id="timeline-bar">
+          <!-- Timeline segments populated dynamically -->
+        </div>
+      </div>
+
+      <!-- BOTTOM ROW: ANALYSIS SUMMARY & EXPORT -->
+      <div class="glass-panel timeline-panel" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; gap: 24px; font-size: 12px; font-family: var(--font-mono); flex-wrap: wrap;">
+          <div>File: <strong id="sum-filename">video.mp4</strong></div>
+          <div>Duration: <strong id="sum-duration">15s</strong></div>
+          <div>Peak Pax: <strong id="sum-peak-people" style="color: var(--accent-cyan);">154</strong></div>
+          <div>Peak Risk: <strong id="sum-peak-risk" style="color: var(--accent-red);">86/100</strong></div>
+          <div>Crit Time: <strong id="sum-crit-time">00:04</strong></div>
+          <div>Crit Zone: <strong id="sum-crit-zone" style="color: var(--accent-red);">ZONE_B</strong></div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button class="btn-secondary" onclick="exportReport('json')">📥 EXPORT JSON REPORT</button>
+          <button class="btn-secondary" onclick="exportReport('csv')">📊 EXPORT CSV TELEMETRY</button>
+          <button class="btn-primary" onclick="location.reload()">🔄 ANALYZE ANOTHER VIDEO</button>
+        </div>
+
+        <div style="width: 100%; font-size: 10.5px; color: var(--text-dim); font-style: italic; margin-top: 6px;" id="sum-disclaimer">
+          Decision-support prototype estimates only. Final operational authority remains strictly with authorized human personnel.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

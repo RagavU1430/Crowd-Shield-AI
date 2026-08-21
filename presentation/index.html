@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CROWD-SHIELD — 9-Slide Hackathon Proposal</title>
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-base: #060B18;
+      --bg-surface: #0A1128;
+      --bg-card: rgba(18, 30, 60, 0.75);
+      --bg-card-hover: rgba(25, 42, 85, 0.85);
+      --border-card: rgba(56, 189, 248, 0.15);
+      --border-card-hover: rgba(56, 189, 248, 0.35);
+      
+      --accent-cyan: #38BDF8;
+      --accent-blue: #2563EB;
+      --accent-emerald: #10B981;
+      --accent-yellow: #F59E0B;
+      --accent-orange: #F97316;
+      --accent-red: #EF4444;
+      
+      --text-white: #F8FAFC;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-white);
+      font-family: var(--font-body);
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Ambient Background Glow */
+    .ambient-glow {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+                  radial-gradient(circle at 50% 50%, rgba(10, 17, 40, 0.95) 0%, var(--bg-base) 100%);
+    }
+
+    /* Top Navigation Bar */
+    header {
+      height: 54px;
+      background: rgba(10, 17, 40, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 10;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #2563EB, #38BDF8);
+      color: #FFF;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-title {
+      font-family: var(--font-heading);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-white);
+      letter-spacing: 0.5px;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .slide-indicator {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-white);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Main Slide Stage */
+    main {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 40px;
+      z-index: 1;
+    }
+
+    .slide {
+      position: absolute;
+      width: calc(100% - 80px);
+      max-width: 1400px;
+      height: calc(100% - 40px);
+      max-height: 800px;
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.98) translateY(10px);
+      transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s ease;
+      display: flex;
+      flex-direction: column;
+      pointer-events: none;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1) translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Slide Header */
+    .slide-header {
+      margin-bottom: 20px;
+    }
+
+    .slide-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 4px;
+    }
+
+    .slide-title {
+      font-family: var(--font-heading);
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-white);
+      line-height: 1.2;
+    }
+
+    .slide-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Slide Content Layout */
+    .slide-body {
+      flex: 1;
+      display: grid;
+      gap: 20px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    /* Glass Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 12px;
+      padding: 22px;
+      backdrop-filter: blur(16px);
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-card-hover);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Typography Utilities */
+    .text-cyan { color: var(--accent-cyan); }
+    .text-green { color: var(--accent-emerald); }
+    .text-yellow { color: var(--accent-yellow); }
+    .text-orange { color: var(--accent-orange); }
+    .text-red { color: var(--accent-red); }
+    .text-muted { color: var(--text-muted); }
+    .text-white { color: var(--text-white); }
+    .font-mono { font-family: var(--font-mono); }
+
+    /* Custom Highlight Box */
+    .highlight-box {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 10px;
+    }
+
+    /* Process Horizontal Steps */
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+    }
+
+    .process-node {
+      background: rgba(18, 30, 60, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 10px;
+      padding: 16px 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .process-node:hover {
+      border-color: var(--accent-cyan);
+      transform: translateY(-2px);
+    }
+
+    .process-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .process-title {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-white);
+    }
+
+    .process-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+
+    /* Pipeline Arrow Sequence */
+    .pipeline-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(15, 23, 42, 0.6);
+      border-left: 3px solid var(--accent-cyan);
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .pipeline-arrow {
+      color: var(--text-dim);
+      font-size: 14px;
+      text-align: center;
+      margin-left: 20px;
+      margin-bottom: 4px;
+    }
+
+    /* Simulation Interactive Controls (Slide 7) */
+    .sim-option-card {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .sim-option-card:hover, .sim-option-card.selected {
+      border-color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .sim-option-card.recommended {
+      border-color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .sim-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-left: 6px;
+    }
+
+    .badge-green { background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); }
+    .badge-yellow { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+    .badge-red { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+    /* Footer Controls */
+    footer {
+      height: 48px;
+      background: rgba(10, 17, 40, 0.9);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      font-size: 12px;
+      color: var(--text-dim);
+      z-index: 10;
+    }
+
+    .footer-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .dot.active {
+      background: var(--accent-cyan);
+      transform: scale(1.3);
+      box-shadow: 0 0 10px var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="brand-logo">
+      <span class="brand-badge">HACKATHON PROPOSAL</span>
+      <span class="brand-title">CROWD-SHIELD</span>
+    </div>
+    <div class="nav-controls">
+      <div class="slide-indicator" id="slideNum">SLIDE 1 / 9</div>
+      <button class="btn-nav" id="prevBtn" onclick="prevSlide()">◀ PREV</button>
+      <button class="btn-nav" id="nextBtn" onclick="nextSlide()">NEXT ▶</button>
+      <button class="btn-nav" onclick="toggleFullScreen()">⛶ FULLSCREEN</button>
+    </div>
+  </header>
+
+  <!-- Main Slide Viewer -->
+  <main>
+
+    <!-- ===================================================================
+         SLIDE 1: TITLE
+         =================================================================== -->
+    <div class="slide active" id="slide-1">
+      <div class="card" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between; border-color: rgba(56,189,248,0.25);">
+        <div>
+          <div class="slide-tag">NATIONAL HACKATHON PROPOSAL • SMART CITY & AI SAFETY</div>
+          <h1 style="font-family: var(--font-heading); font-size: 52px; font-weight: 900; letter-spacing: -1px; margin-top: 6px;">
+            CROWD-SHIELD
+          </h1>
+          <h2 style="font-family: var(--font-heading); font-size: 22px; font-weight: 700; color: var(--accent-cyan); margin-top: 4px;">
+            Context-Aware Predictive Crowd Safety & Intervention System
+          </h2>
+          <div style="font-family: var(--font-mono); font-size: 15px; font-weight: 600; color: var(--accent-emerald); margin-top: 14px; letter-spacing: 1px;">
+            Sense → Predict → Simulate → Recommend → Protect
+          </div>
+          <div class="highlight-box" style="margin-top: 20px; font-size: 14.5px; line-height: 1.6; color: #CBD5E1; font-style: italic; border-left: 4px solid var(--accent-cyan);">
+            “An AI-powered decision-support system that identifies evolving crowd risk, predicts how the situation may develop, and recommends the safest feasible intervention to event authorities.”
+          </div>
+        </div>
+
+        <!-- 4-Stage Progression Visual -->
+        <div>
+          <div style="font-size: 11px; font-family: var(--font-mono); color: var(--text-dim); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">
+            TRANSITION CONTINUUM
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-emerald); border-radius: 8px; padding: 14px;">
+              <div style="font-weight: 700; font-size: 13px; color: var(--accent-emerald);">1. SAFE</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Normal crowd dynamics & laminar flow</div>
+            </div>
+            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--accent-yellow); border-radius: 8px; padding: 14px;">
+              <div style="font-weight: 700; font-size: 13px; color: var(--accent-yellow);">2. WARNING</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Rising density & corridor queue accumulation</div>
+            </div>
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); border-radius: 8px; padding: 14px;">
+              <div style="font-weight: 700; font-size: 13px; color: var(--accent-red);">3. CRITICAL</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Chokepoint conflict & shockwave compression</div>
+            </div>
+            <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent-cyan); border-radius: 8px; padding: 14px;">
+              <div style="font-weight: 700; font-size: 13px; color: var(--accent-cyan);">4. INTERVENTION</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Safest feasible action approved by operator</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 2: THE PROBLEM
+         =================================================================== -->
+    <div class="slide" id="slide-2">
+      <div class="slide-header">
+        <div class="slide-tag">SLIDE 02 • THE CHALLENGE</div>
+        <div class="slide-title">THE PROBLEM: RAPID RISK ESCALATION IN MASS GATHERINGS</div>
+        <div class="slide-subtitle">Concerts • Religious Festivals • Stadium Events • Public Celebrations • Political Rallies</div>
+      </div>
+      <div class="slide-body" style="grid-template-columns: 1fr 1.1fr;">
+        <!-- Left: Progressive Sequence -->
+        <div class="card">
+          <div class="card-title text-cyan">⚠️ EVOLVING CROWD-CRUSH PROGRESSION</div>
+          <div class="pipeline-step" style="border-color: var(--accent-emerald);">
+            <strong class="text-green">1. Normal Crowd Flow:</strong> Free movement across concourses
+          </div>
+          <div class="pipeline-arrow">↓</div>
+          <div class="pipeline-step" style="border-color: var(--accent-yellow);">
+            <strong class="text-yellow">2. Increasing Density:</strong> Inflow outpaces rated corridor capacity
+          </div>
+          <div class="pipeline-arrow">↓</div>
+          <div class="pipeline-step" style="border-color: var(--accent-orange);">
+            <strong class="text-orange">3. Bottleneck Formation:</strong> Severe narrowing at entry gates/corridors
+          </div>
+          <div class="pipeline-arrow">↓</div>
+          <div class="pipeline-step" style="border-color: var(--accent-red);">
+            <strong class="text-red">4. Flow Conflict:</strong> Opposing streams collide, generating turbulence
+          </div>
+          <div class="pipeline-arrow">↓</div>
+          <div class="pipeline-step" style="border-color: var(--accent-red); background: rgba(239, 68, 68, 0.15);">
+            <strong class="text-red">5. Critical Crowd Risk:</strong> Loss of physical dampening & shockwave formation
+          </div>
+        </div>
+
+        <!-- Right: Operational Gaps & Problem Box -->
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="card" style="flex: 1;">
+            <div class="card-title text-cyan">🚨 CRITICAL OPERATIONAL CHALLENGES</div>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+              <li><strong>• Rapid Escalation:</strong> Manageable queues deteriorate into high-risk conditions in under 3 minutes.</li>
+              <li><strong>• CCTV Occlusion & Blind Spots:</strong> Static cameras lack venue-wide contextual comprehension.</li>
+              <li><strong>• Narrow Decision Windows:</strong> Authorities have seconds to evaluate multiple intervention choices.</li>
+              <li><strong>• Lack of Actionable Guidance:</strong> Existing tools sound alarms but offer no tactical remediation advice.</li>
+            </ul>
+          </div>
+          <div class="highlight-box" style="border-color: var(--accent-cyan); background: rgba(15, 23, 42, 0.9);">
+            <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--accent-cyan); margin-bottom: 4px;">
+              THE CORE SYSTEM QUESTION
+            </div>
+            <div style="font-size: 14px; font-weight: 600; color: var(--text-white); font-style: italic; line-height: 1.5;">
+              “How can authorities identify an evolving crowd-crush risk early and determine the safest feasible intervention before the situation becomes critical?”
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 3: EXISTING SYSTEM & GAP
+         =================================================================== -->
+    <div class="slide" id="slide-3">
+      <div class="slide-header">
+        <div class="slide-tag">SLIDE 03 • INDUSTRY GAP</div>
+        <div class="slide-title">WHY EXISTING SYSTEMS ARE NOT ENOUGH</div>
+        <div class="slide-subtitle">A critical operational void exists between reactive detection and actionable decision support</div>
+      </div>
+      <div class="slide-body" style="grid-template-columns: 320px 1fr;">
+        <!-- Left: Existing Pipeline -->
+        <div class="card" style="text-align: center;">
+          <div class="card-title text-orange" style="justify-content: center;">EXISTING PIPELINE</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+            <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">CCTV Feed Ingestion</div>
+            <div style="color: var(--text-dim);">↓</div>
+            <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">Person Detection</div>
+            <div style="color: var(--text-dim);">↓</div>
+            <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">Density Thresholding</div>
+            <div style="color: var(--text-dim);">↓</div>
+            <div style="background: rgba(239, 68, 68, 0.2); border: 1px solid var(--accent-red); padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 800; color: var(--accent-red);">
+              REACTIVE ALARM ⚠️
+            </div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 14px; font-style: italic;">
+            Fires after danger has already materialized.
+          </div>
+        </div>
+
+        <!-- Right: Limitations & Contrast -->
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="card" style="flex: 1;">
+            <div class="card-title text-cyan">🛑 FUNDAMENTAL INDUSTRY LIMITATIONS</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12.5px;">
+              <div style="background: rgba(15,23,42,0.6); padding: 10px; border-radius: 6px;">
+                <strong class="text-white">Density Alone ≠ Danger:</strong><br>
+                <span class="text-muted">Dense seated crowds are safe; turbulent low-density streams can cause crush injuries.</span>
+              </div>
+              <div style="background: rgba(15,23,42,0.6); padding: 10px; border-radius: 6px;">
+                <strong class="text-white">No Intervention Simulation:</strong><br>
+                <span class="text-muted">Gives zero foresight on whether closing Gate A will relieve or trap the crowd.</span>
+              </div>
+              <div style="background: rgba(15,23,42,0.6); padding: 10px; border-radius: 6px;">
+                <strong class="text-white">No Venue Awareness:</strong><br>
+                <span class="text-muted">Treats cameras as isolated pixels without modeling gates, exits, and corridor topologies.</span>
+              </div>
+              <div style="background: rgba(15,23,42,0.6); padding: 10px; border-radius: 6px;">
+                <strong class="text-white">Downstream Blindness:</strong><br>
+                <span class="text-muted">Blindly rerouting people can trigger catastrophic secondary bottlenecks elsewhere.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Bold Statement -->
+          <div class="highlight-box" style="border-color: var(--accent-emerald); background: rgba(10, 17, 40, 0.95); display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-size: 13px; font-weight: 700; color: var(--accent-orange);">
+              EXISTING SYSTEMS ASK: “What is happening right now?”
+            </div>
+            <div style="font-size: 14px; font-weight: 800; color: var(--accent-emerald);">
+              CROWD-SHIELD ASKS: “What is likely to happen next — AND WHAT IS THE SAFEST FEASIBLE ACTION NOW?”
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 4: PROPOSED SOLUTION
+         =================================================================== -->
+    <div class="slide" id="slide-4">
+      <div class="slide-header">
+        <div class="slide-tag">SLIDE 04 • THE INNOVATION</div>
+        <div class="slide-title">OUR SOLUTION: CROWD-SHIELD</div>
+        <div class="slide-subtitle">Transforming crowd safety from reactive alerting to predictive intervention decision support</div>
+      </div>
+      <div class="slide-body" style="grid-template-rows: auto 1fr;">
+        <!-- 7-Step Process Nodes -->
+        <div class="process-grid">
+          <div class="process-node">
+            <div class="process-num">1</div>
+            <div class="process-title text-cyan">SENSE</div>
+            <div class="process-desc">Anonymous video & CCTV stream ingestion</div>
+          </div>
+          <div class="process-node">
+            <div class="process-num">2</div>
+            <div class="process-title text-cyan">UNDERSTAND</div>
+            <div class="process-desc">Extract density & velocity vector fields</div>
+          </div>
+          <div class="process-node">
+            <div class="process-num">3</div>
+            <div class="process-title text-yellow">PREDICT</div>
+            <div class="process-desc">Compute short-term risk trajectory slope</div>
+          </div>
+          <div class="process-node">
+            <div class="process-num">4</div>
+            <div class="process-title text-orange">IDENTIFY</div>
+            <div class="process-desc">Isolate critical zone & chokepoint</div>
+          </div>
+          <div class="process-node">
+            <div class="process-num">5</div>
+            <div class="process-title text-cyan">SIMULATE</div>
+            <div class="process-desc">What-if network flow redistribution</div>
+          </div>
+          <div class="process-node">
+            <div class="process-num">6</div>
+            <div class="process-title text-green">RECOMMEND</div>
+            <div class="process-desc">Filter safest feasible tactical action</div>
+          </div>
+          <div class="process-node">
+            <div class="process-num">7</div>
+            <div class="process-title text-green">MONITOR</div>
+            <div class="process-desc">Closed-loop risk de-escalation validation</div>
+          </div>
+        </div>
+
+        <!-- Core Innovation Highlight -->
+        <div class="card" style="display: flex; flex-direction: column; justify-content: center; border-color: rgba(56, 189, 248, 0.3);">
+          <div class="card-title text-cyan" style="font-size: 17px;">
+            💡 CORE PARADIGM SHIFT: PREDICTIVE INTERVENTION SIMULATION
+          </div>
+          <div style="font-size: 16px; font-weight: 600; line-height: 1.6; color: var(--text-white); margin-bottom: 16px;">
+            “Instead of only shouting DANGER, CROWD-SHIELD determines which feasible tactical intervention is mathematically projected to maximize risk reduction without causing downstream overload.”
+          </div>
+          <div style="display: flex; gap: 20px; font-size: 13px; font-weight: 700; flex-wrap: wrap;">
+            <span class="text-green">✔ AI Recommends</span>
+            <span class="text-cyan">✔ Human Authority Approves</span>
+            <span class="text-yellow">✔ Zero Autonomous Gate Control</span>
+            <span class="text-emerald">✔ Zero Facial Recognition</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 5: SYSTEM WORKFLOW & ARCHITECTURE
+         =================================================================== -->
+    <div class="slide" id="slide-5">
+      <div class="slide-header">
+        <div class="slide-tag">SLIDE 05 • ARCHITECTURE</div>
+        <div class="slide-title">HOW CROWD-SHIELD WORKS: SYSTEM WORKFLOW</div>
+        <div class="slide-subtitle">A robust multi-tier pipeline connecting perception, venue graph, counterfactual simulation, and human command</div>
+      </div>
+      <div class="slide-body" style="grid-template-columns: repeat(3, 1fr);">
+        <!-- Column 1: Inputs -->
+        <div class="card">
+          <div class="card-title text-cyan">📥 1. INPUTS & SENSING</div>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px;">
+            <div class="pipeline-step">CCTV / Video Stream (MP4/WebM)</div>
+            <div class="pipeline-step">Venue Digital Model (Zones & Areas)</div>
+            <div class="pipeline-step">Entry & Exit Capacities (pax/min)</div>
+            <div class="pipeline-step">Gate Status & Corridor Connectivity</div>
+            <div class="pipeline-step">Anonymous Head/Centroid Coordinates</div>
+            <div class="pipeline-step">Dense Optical Flow Velocity Vectors</div>
+          </div>
+        </div>
+
+        <!-- Column 2: Process -->
+        <div class="card">
+          <div class="card-title text-yellow">⚙️ 2. PROCESSING ENGINES</div>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px;">
+            <div class="pipeline-step"><strong>Crowd State Engine:</strong> Density & Speed</div>
+            <div class="pipeline-step"><strong>Turbulence & Conflict:</strong> Vector Variance</div>
+            <div class="pipeline-step"><strong>Contextual Risk Engine:</strong> 0–100 Score</div>
+            <div class="pipeline-step"><strong>Risk Trajectory Engine:</strong> Trend (dR/dt)</div>
+            <div class="pipeline-step"><strong>Intervention Simulator:</strong> NetworkX Flow</div>
+            <div class="pipeline-step"><strong>Feasibility Engine:</strong> Constraint Solver</div>
+          </div>
+        </div>
+
+        <!-- Column 3: Outputs -->
+        <div class="card">
+          <div class="card-title text-green">🎯 3. DECISION OUTPUTS</div>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px;">
+            <div class="pipeline-step"><strong>Live Risk Score:</strong> 86/100 (CRITICAL)</div>
+            <div class="pipeline-step"><strong>Critical Zone Isolation:</strong> Zone B</div>
+            <div class="pipeline-step"><strong>Trajectory Trend:</strong> ↑ Rapidly Increasing</div>
+            <div class="pipeline-step"><strong>Simulated Deltas:</strong> 4 Candidate Options</div>
+            <div class="pipeline-step"><strong>Top Recommendation:</strong> Safest Feasible</div>
+            <div class="pipeline-step"><strong>HITL Interface:</strong> [APPROVE / REJECT]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 6: KEY FEATURES
+         =================================================================== -->
+    <div class="slide" id="slide-6">
+      <div class="slide-header">
+        <div class="slide-tag">SLIDE 06 • CAPABILITIES</div>
+        <div class="slide-title">KEY SYSTEM FEATURES</div>
+        <div class="slide-subtitle">7 purpose-built capabilities engineered for public safety and tactical command</div>
+      </div>
+      <div class="slide-body" style="grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="card" style="padding: 14px 18px;">
+          <div class="card-title text-cyan" style="font-size: 14px;">1. Anonymous Crowd Intelligence</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Detect crowd density and flow vectors without facial recognition, identity tracking, or biometric storage.</div>
+        </div>
+        <div class="card" style="padding: 14px 18px;">
+          <div class="card-title text-cyan" style="font-size: 14px;">2. Venue-Aware Risk Mapping</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Understand zones, gates, corridors, and structural chokepoints directly mapped to physical blueprints.</div>
+        </div>
+        <div class="card" style="padding: 14px 18px;">
+          <div class="card-title text-yellow" style="font-size: 14px;">3. Risk Trajectory & Trend</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Compute 1st derivative slope (dR/dt) to forecast whether danger is stable, increasing, or surging.</div>
+        </div>
+        <div class="card" style="padding: 14px 18px;">
+          <div class="card-title text-orange" style="font-size: 14px;">4. Critical-Zone Detection</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Pinpoint the exact geometric zone experiencing acute pressure before spillover occurs.</div>
+        </div>
+        <div class="card" style="padding: 14px 18px;">
+          <div class="card-title text-cyan" style="font-size: 14px;">5. Intervention Simulator</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Virtually test candidate tactical actions (gate throttle, exit release, rerouting) in real time.</div>
+        </div>
+        <div class="card" style="padding: 14px 18px;">
+          <div class="card-title text-green" style="font-size: 14px;">6. Feasible Action Recommendation</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Select the safest viable action based on risk reduction, egress headroom, and zero downstream overload.</div>
+        </div>
+        <div class="card" style="grid-column: span 2; padding: 14px 18px; border-color: var(--accent-emerald);">
+          <div class="card-title text-green" style="font-size: 14px;">7. Human-in-the-Loop Safeguard</div>
+          <div style="font-size: 12px; color: var(--text-muted);">AI acts strictly as a decision-support copilot; authorized human operators retain final operational authority with comprehensive audit logging.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 7: LIVE SCENARIO / DIFFERENTIATOR
+         =================================================================== -->
+    <div class="slide" id="slide-7">
+      <div class="slide-header">
+        <div class="slide-tag">SLIDE 07 • LIVE DEMO SCENARIO</div>
+        <div class="slide-title">FROM ALERT TO ACTION: LIVE DEMONSTRATION</div>
+        <div class="slide-subtitle">Simulating counterfactual outcomes during a Stage Surge event in Zone B</div>
+      </div>
+      <div class="slide-body" style="grid-template-columns: 360px 1fr;">
+        <!-- Left: Live Telemetry State -->
+        <div class="card">
+          <div class="card-title text-red">🚨 LIVE STATE: ZONE B</div>
+          <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12.5px;">
+            <div><strong>Occupancy:</strong> <span class="text-red font-mono">1,280 / 1,000 (128%)</span></div>
+            <div><strong>Measured Density:</strong> <span class="text-red font-mono">6.4 people/m²</span></div>
+            <div><strong>Flow Convergence:</strong> <span class="text-orange font-mono">0.89 (Inward Surge)</span></div>
+            <div><strong>Bottleneck Pressure:</strong> <span class="text-red font-mono">0.94 (Chokepoint)</span></div>
+            <div><strong>Current Risk:</strong> <span class="text-red font-mono" style="font-size: 18px; font-weight: 800;">86 / 100 [CRITICAL]</span></div>
+            <div><strong>Trajectory Trend:</strong> <span class="text-red font-mono">↑ RAPIDLY INCREASING</span></div>
+          </div>
+          <div style="margin-top: 18px; font-size: 10px; color: var(--text-dim); font-style: italic;">
+            *Illustrative prototype scenario — not a real-world prediction.
+          </div>
+        </div>
+
+        <!-- Right: Intervention Comparison Matrix -->
+        <div class="card">
+          <div class="card-title text-cyan">⚡ WHAT-IF INTERVENTION COMPARISON MATRIX</div>
+          
+          <div class="sim-option-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong style="font-size: 13px;">OPTION 1: Close Gate A (Inflow Restriction Only)</strong>
+              <span class="sim-badge badge-red">Risk 86 → 91 | REJECTED</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              Traps existing crowd and exacerbates internal chokepoint without egress relief.
+            </div>
+          </div>
+
+          <div class="sim-option-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong style="font-size: 13px;">OPTION 2: Open Emergency Exit C</strong>
+              <span class="sim-badge badge-yellow">Risk 86 → 57 | FEASIBLE</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              Provides outward egress path; evacuates 400 pax/min directly to safety perimeter.
+            </div>
+          </div>
+
+          <div class="sim-option-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong style="font-size: 13px;">OPTION 3: Redirect Incoming Flow via Corridor D</strong>
+              <span class="sim-badge badge-green">Risk 86 → 43 | FEASIBLE</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+              Halts upstream convergence into Zone B without overloading outer concourse.
+            </div>
+          </div>
+
+          <div class="sim-option-card recommended selected">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong style="font-size: 13px; color: var(--accent-emerald);">OPTION 4: Open Exit C + Redirect Flow (COMBO)</strong>
+              <span class="sim-badge badge-green" style="background: var(--accent-emerald); color: #060B18; font-weight: 800;">
+                Risk 86 → 29 | RECOMMENDED ✅
+              </span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-white); margin-top: 4px;">
+              <strong>Optimal Synergistic Action:</strong> Max safe outflow + eliminates upstream pressure within safe margins.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 8: TECHNOLOGY & 2-DAY FEASIBILITY
+         =================================================================== -->
+    <div class="slide" id="slide-8">
+      <div class="slide-header">
+        <div class="slide-tag">SLIDE 08 • FEASIBILITY</div>
+        <div class="slide-title">TECHNOLOGY STACK & 2-DAY MVP FEASIBILITY</div>
+        <div class="slide-subtitle">Pragmatic, reliable engineering choices tailored for a robust 48-hour prototype delivery</div>
+      </div>
+      <div class="slide-body" style="grid-template-columns: 1fr 1.1fr;">
+        <!-- Left: Stack -->
+        <div class="card">
+          <div class="card-title text-cyan">💻 PRODUCTION-READY TECH STACK</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12.5px;">
+            <div><strong>• Computer Vision:</strong> Python, OpenCV Farneback Flow, YOLOv8 Nano</div>
+            <div><strong>• AI & Risk ML:</strong> Scikit-Learn, Temporal Differential Features</div>
+            <div><strong>• Graph Optimization:</strong> NetworkX (Capacity flow networks, Dijkstra)</div>
+            <div><strong>• Backend Core:</strong> FastAPI (Asynchronous REST & WebSockets)</div>
+            <div><strong>• Tactical UI:</strong> React 18, Vite, HTML5 Canvas & Leaflet</div>
+            <div><strong>• Datasets:</strong> Academic benchmark crowd datasets & synthetic scenarios</div>
+          </div>
+        </div>
+
+        <!-- Right: 2-Day Milestones -->
+        <div class="card">
+          <div class="card-title text-green">📅 48-HOUR HACKATHON MVP SCOPE</div>
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 12px;">
+            <div style="background: rgba(15,23,42,0.7); padding: 10px; border-left: 3px solid var(--accent-yellow); border-radius: 0 6px 6px 0;">
+              <strong class="text-yellow">DAY 1: SENSE & UNDERSTAND</strong>
+              <div class="text-muted" style="margin-top: 4px;">
+                Video Ingestion → YOLO Anonymous Centroid Detection → Farneback Optical Flow → Crowd State Engine → Contextual Risk Scoring (0–100).
+              </div>
+            </div>
+            <div style="background: rgba(15,23,42,0.7); padding: 10px; border-left: 3px solid var(--accent-emerald); border-radius: 0 6px 6px 0;">
+              <strong class="text-green">DAY 2: SIMULATE & RECOMMEND</strong>
+              <div class="text-muted" style="margin-top: 4px;">
+                Venue Graph Model → Counterfactual Intervention Simulation → Feasibility Constraint Solver → Tactical HITL Dashboard & Audit Logger.
+              </div>
+            </div>
+          </div>
+          <div class="highlight-box" style="margin-top: 10px; font-size: 11px; font-style: italic; color: #CBD5E1;">
+            “Prototype scope focuses on recorded/simulated scenarios and demonstrates the core decision-support pipeline. Production edge deployment is a planned future phase.”
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================
+         SLIDE 9: FUTURE VISION & IMPACT
+         =================================================================== -->
+    <div class="slide" id="slide-9">
+      <div class="slide-header">
+        <div class="slide-tag">SLIDE 09 • FUTURE VISION</div>
+        <div class="slide-title">FUTURE VISION: CITY-SCALE CROWD INTELLIGENCE</div>
+        <div class="slide-subtitle">Expanding from venue-level decision support to multi-tier smart city public safety</div>
+      </div>
+      <div class="slide-body" style="grid-template-rows: auto 1fr;">
+        <!-- 4 Multi-Tier Layers -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
+          <div class="card" style="padding: 16px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 6px;">🛰️</div>
+            <div style="font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--accent-cyan);">SATELLITE</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Large-area situation & macro arterial traffic awareness</div>
+          </div>
+          <div class="card" style="padding: 16px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 6px;">🚁</div>
+            <div style="font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--accent-cyan);">DRONE FLEET</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Aerial crowd-flow tracking & CCTV blind-spot coverage</div>
+          </div>
+          <div class="card" style="padding: 16px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 6px;">📹</div>
+            <div style="font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--accent-emerald);">LOCAL CCTV</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">High-res anonymous density & kinetic turbulence analysis</div>
+          </div>
+          <div class="card" style="padding: 16px; text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 6px;">📡</div>
+            <div style="font-family: var(--font-heading); font-size: 13px; font-weight: 700; color: var(--accent-emerald);">SMART IoT GATES</div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Automated optical counters & emergency egress status</div>
+          </div>
+        </div>
+
+        <!-- Vision Statement Callout -->
+        <div class="card" style="display: flex; flex-direction: column; justify-content: center; text-align: center; border-color: var(--accent-emerald);">
+          <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--accent-cyan); letter-spacing: 1px;">
+            ADVANCED AI DIGITAL TWIN ROADMAP
+          </div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">
+            Multi-Agent Simulation • Reinforcement Learning Intervention Policies • Multi-Agency Incident Command Sync
+          </div>
+          <div style="margin: 18px 0 8px 0; font-family: var(--font-heading); font-size: 22px; font-weight: 800; color: var(--text-white);">
+            “Move crowd safety from reactive monitoring to predictive, context-aware decision support.”
+          </div>
+          <div style="font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--accent-emerald);">
+            CROWD-SHIELD: Detecting danger is not enough. The right intervention at the right time matters.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer Navigation Dots & Keys Help -->
+  <footer>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span>USE <strong>LEFT / RIGHT ARROWS</strong> OR BUTTONS TO NAVIGATE</span>
+    </div>
+    <div class="footer-dots" id="dotsContainer">
+      <!-- Generated via JS -->
+    </div>
+    <div>
+      <span>CROWD-SHIELD © 2026</span>
+    </div>
+  </footer>
+
+  <script>
+    const totalSlides = 9;
+    let currentSlide = 1;
+
+    // Generate Dots
+    const dotsContainer = document.getElementById('dotsContainer');
+    for (let i = 1; i <= totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.className = `dot ${i === 1 ? 'active' : ''}`;
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
+    }
+
+    function updateView() {
+      // Slides
+      document.querySelectorAll('.slide').forEach((s, idx) => {
+        if (idx + 1 === currentSlide) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+
+      // Indicator
+      document.getElementById('slideNum').textContent = `SLIDE ${currentSlide} / ${totalSlides}`;
+
+      // Dots
+      document.querySelectorAll('.dot').forEach((d, idx) => {
+        if (idx + 1 === currentSlide) {
+          d.classList.add('active');
+        } else {
+          d.classList.remove('active');
+        }
+      });
+    }
+
+    function goToSlide(n) {
+      if (n >= 1 && n <= totalSlides) {
+        currentSlide = n;
+        updateView();
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+        updateView();
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateView();
+      }
+    }
+
+    // Keyboard Navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key >= '1' && e.key <= '9') {
+        goToSlide(parseInt(e.key));
+      }
+    });
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+  </script>
+</body>
+</html>
