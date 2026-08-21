@@ -76,16 +76,13 @@ app.mount(
 
 @app.get("/")
 def read_root():
-    index_file = STATIC_DIR / "index.html"
-    if index_file.exists():
-        return FileResponse(str(index_file))
     return {
-        "system": "CROWD-SHIELD",
+        "system": "CROWD-SHIELD API Backend",
         "full_name": "Context-Aware Predictive Crowd Safety & Intervention System",
-        "tagline": "Sense -> Predict -> Simulate -> Recommend -> Protect",
         "status": "ONLINE",
-        "docs": "/docs",
-        "primary_input_mode": "UPLOADED_RECORDED_VIDEO"
+        "health": "/api/health",
+        "swagger_docs": "/docs",
+        "redoc": "/redoc"
     }
 
 if __name__ == "__main__":
