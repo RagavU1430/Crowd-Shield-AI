@@ -1,7 +1,5 @@
 import type { AnalysisJob, DetectionJob, VideoUploadResponse } from "../types/api";
 
-// In development Vite proxies these paths to the bundled FastAPI launcher.
-// VITE_BASE_URL remains available for separately hosted production backends.
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "http://127.0.0.1:8010").replace(/\/$/, "");
 
 async function messageFromResponse(response: Response, fallback: string) {
@@ -20,7 +18,7 @@ export function uploadVideo(
     request.upload.onprogress = (event) => {
       if (event.lengthComputable) onProgress?.(Math.round((event.loaded / event.total) * 100));
     };
-    request.onerror = () => reject(new Error("Unable to connect to the analysis server."));
+    request.onerror = () => reject(new Error("Unable to connect to the analysis server. Make sure the backend is running."));
     request.onload = () => {
       const body = request.response;
       if (request.status >= 200 && request.status < 300) resolve(body);
@@ -67,7 +65,12 @@ export async function rejectIntervention(jobId: string) {
 
 export async function getPersonDetections(jobId: string): Promise<DetectionJob> {
   const response = await fetch(`${BASE_URL}/api/analysis/${encodeURIComponent(jobId)}/detections`);
-  if (!response.ok) throw new Error(await messageFromResponse(response, "Detection status unavailable"));
+  if (!response.ok) {
+    if (response.status === 502 || response.status === 503 || response.status === 504) {
+      throw new Error("Server warming up, retrying...");
+    }
+    throw new Error(await messageFromResponse(response, "Detection status unavailable"));
+  }
   return response.json();
 }
 
