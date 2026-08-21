@@ -5,6 +5,12 @@ import syntheticDataset from "../data/synthetic_crowd_scenarios.json";
 
 const BASE_URL = (import.meta.env.VITE_BASE_URL || "http://127.0.0.1:8010").replace(/\/$/, "");
 
+const SCENARIO_DESCRIPTIONS = {
+  SAFE: "Fluid crowd movement with low density & open bottlenecks.",
+  ESCALATING: "Gradual congestion buildup with increasing bottleneck pressure.",
+  CRITICAL: "Severe crowd surge with critical density & bottleneck pressure.",
+};
+
 async function handleResponse(response, fallback) {
   if (!response.ok) {
     const body = await response.json().catch(() => null);
@@ -14,17 +20,18 @@ async function handleResponse(response, fallback) {
 }
 
 function _localScenarios() {
-  return syntheticDataset.scenarios.map((s) => ({
-    name: s.name,
-    description: s.description,
-    duration_seconds: s.duration_seconds,
-    records_count: s.records_count,
+  const scenarioNames = Object.keys(syntheticDataset.scenarios || {});
+  return scenarioNames.map((name) => ({
+    name,
+    description: SCENARIO_DESCRIPTIONS[name] || `${name} crowd safety scenario`,
+    duration_seconds: syntheticDataset.metadata?.duration_sec || 300,
+    records_count: syntheticDataset.scenarios[name]?.length || 0,
   }));
 }
 
 function _localAnalyze(name) {
-  const scenario = syntheticDataset.scenarios.find((s) => s.name === name) || syntheticDataset.scenarios[0];
-  const records = scenario.records;
+  const scenarioKey = Object.keys(syntheticDataset.scenarios || {}).find((k) => k === name) || "CRITICAL";
+  const records = syntheticDataset.scenarios[scenarioKey] || syntheticDataset.scenarios["CRITICAL"] || [];
 
   const timestamps = Array.from(new Set(records.map((r) => r.timestamp))).sort((a, b) => a - b);
   const timeline = timestamps.map((ts) => {
@@ -71,15 +78,15 @@ function _localAnalyze(name) {
 
     return {
       timestamp: ts,
-      person_count: worst.detected_occupancy,
+      person_count: Math.round(worst.detected_occupancy),
       relative_density: density,
-      density_label: worst.density_label,
+      density_label: worst.density_label || risk_level,
       risk_score,
       risk_level,
-      risk_trend: worst.trend,
-      risk_slope: worst.slope,
+      risk_trend: worst.trend || (density_growth > 2 ? "INCREASING" : "STABLE"),
+      risk_slope: worst.slope || 0,
       movement_speed: worst.movement_score,
-      dominant_direction_deg: worst.direction_deg,
+      dominant_direction_deg: worst.direction_deg || 90,
       flow_conflict: worst.conflict_score,
       convergence: worst.convergence_score,
       bottleneck_pressure: bottleneck,
@@ -89,7 +96,24 @@ function _localAnalyze(name) {
     };
   });
 
-  const lastState = timeline[timeline.length - 1];
+  const lastState = timeline[timeline.length - 1] || {
+    timestamp: 0,
+    person_count: 50,
+    relative_density: 30,
+    density_label: "WATCH",
+    risk_score: 45,
+    risk_level: "WATCH",
+    risk_trend: "STABLE",
+    risk_slope: 0,
+    movement_speed: 15,
+    dominant_direction_deg: 90,
+    flow_conflict: 10,
+    convergence: 15,
+    bottleneck_pressure: 20,
+    critical_zone: "ZONE_A",
+    zones: [],
+    top_contributors: ["Moderate crowd occupancy"],
+  };
 
   const interventions = [
     {
@@ -116,9 +140,9 @@ function _localAnalyze(name) {
 
   return {
     scenario: {
-      name: scenario.name,
-      description: scenario.description,
-      duration_seconds: scenario.duration_seconds,
+      name: scenarioKey,
+      description: SCENARIO_DESCRIPTIONS[scenarioKey] || `${scenarioKey} crowd safety scenario`,
+      duration_seconds: syntheticDataset.metadata?.duration_sec || 300,
     },
     analysis: {
       mode: "DEMO_SIMULATION",
@@ -145,7 +169,8 @@ export async function getScenario(name) {
     const response = await fetch(`${BASE_URL}/api/synthetic/scenarios/${encodeURIComponent(name)}`);
     return await handleResponse(response, "Could not load scenario");
   } catch {
-    return syntheticDataset.scenarios.find((s) => s.name === name) || syntheticDataset.scenarios[0];
+    const scenarios = _localScenarios();
+    return scenarios.find((s) => s.name === name) || scenarios[0];
   }
 }
 
